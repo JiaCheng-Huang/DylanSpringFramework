@@ -5,5 +5,7 @@ package org.dylan.springframework.factory;
  * @date 2019/03/03 23:17
  */
 public interface BeanFactory {
-    Object getBean(String name);
+    Object getBean(String beanName);
+
+    boolean containsBean(String beanName);
 }
