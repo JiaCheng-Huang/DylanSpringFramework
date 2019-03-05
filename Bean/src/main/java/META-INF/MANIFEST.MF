@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Implementation-Title: DylanSpring:bean
+Implementation-Version: 1.0
+Built-By: Jiacheng Huang
+Build-Jdk: 1.8.0_162 (Oracle Corporation)
+Created-By: Apache Maven 3.3.9
