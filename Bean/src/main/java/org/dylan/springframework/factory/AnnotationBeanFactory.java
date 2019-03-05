@@ -30,14 +30,14 @@ public class AnnotationBeanFactory extends AbstractBeanFactory {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
             e.printStackTrace();
-        } catch (InstantiationException e) {
+        } catch (SpringIOCInitException e) {
             e.printStackTrace();
-        } catch (Exception e) {
+        } catch (InstantiationException e) {
             e.printStackTrace();
         }
     }
 
-    private void inject() throws IllegalAccessException {
+    private void inject() throws IllegalAccessException, SpringIOCInitException {
 
         for (Map.Entry<String, Object> entry : ioc.entrySet()) {
 
@@ -50,12 +50,28 @@ public class AnnotationBeanFactory extends AbstractBeanFactory {
 
             for (Field field : fields) {
 
+                field.setAccessible(true);
+
                 if (field.isAnnotationPresent(Autowired.class)) {
-                    field.setAccessible(true);
                     String beanName = lowerFirst(field.getType().getSimpleName().replace(".class", ""));
+
+                    if (!containsBean(beanName)) {
+                        throw new SpringIOCInitException("Bean " + beanName + " not exist");
+                    }
+
                     field.set(entry.getValue(), ioc.get(beanName));
                 } else if (field.isAnnotationPresent(Qualifier.class)) {
-                    // todo
+                    Qualifier qualifier = field.getAnnotation(Qualifier.class);
+                    String beanName = qualifier.value();
+                    if ("".equals(beanName)) {
+                        beanName = lowerFirst(field.getType().getSimpleName().replace(".class", ""));
+                    }
+
+                    if (!containsBean(beanName)) {
+                        throw new SpringIOCInitException("Bean " + beanName + " not exist");
+                    }
+
+                    field.set(entry.getValue(), ioc.get(beanName));
                 }
 
             }
@@ -64,7 +80,7 @@ public class AnnotationBeanFactory extends AbstractBeanFactory {
 
     }
 
-    private void initIoC() throws Exception {
+    private void initIoC() throws SpringIOCInitException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 
         for (String className : classNames) {
             Class clazz = Class.forName(className);
@@ -83,9 +99,12 @@ public class AnnotationBeanFactory extends AbstractBeanFactory {
                 Service service = (Service) clazz.getAnnotation(Service.class);
                 Class<?>[] interfaces = service.getClass().getInterfaces();
                 for (Class<?> i : interfaces) {
-                    String beanName = lowerFirst(i.getSimpleName().replace(".class", ""));
+                    String beanName = service.name();
+                    if ("".equals(beanName)) {
+                        beanName = lowerFirst(i.getSimpleName().replace(".class", ""));
+                    }
                     if (ioc.containsKey(beanName)) {
-                        throw new Exception("bean " + beanName + " already exists");
+                        throw new SpringIOCInitException("bean " + beanName + " already exists");
                     }
                     ioc.put(beanName, clazz.newInstance());
                 }
@@ -122,9 +141,12 @@ public class AnnotationBeanFactory extends AbstractBeanFactory {
         basePackage = properties.getProperty("ScanPackage");
     }
 
-    public Object getBean(String name) {
-        Object o = ioc.get(name);
-        return o;
+    public Object getBean(String beanName) {
+        return ioc.get(beanName);
+    }
+
+    public boolean containsBean(String beanName) {
+        return ioc.containsKey(beanName);
     }
 
     private String lowerFirst(String str) {
