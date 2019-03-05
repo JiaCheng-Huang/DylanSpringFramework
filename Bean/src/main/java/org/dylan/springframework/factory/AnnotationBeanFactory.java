@@ -117,9 +117,10 @@ public class AnnotationBeanFactory extends AbstractBeanFactory {
     private void doScanner(String basePackage) throws FileNotFoundException {
         String path = "/" + basePackage.replaceAll("\\.", "/");
         URL url = getClass().getResource(path);
-        File dir = new File(url.getFile());
 
-        if (!dir.exists()) throw new FileNotFoundException("package not found," + dir);
+        if (url == null) throw new FileNotFoundException("package " + path + " not exists");
+
+        File dir = new File(url.getFile());
 
         for (File file : dir.listFiles()) {
 
