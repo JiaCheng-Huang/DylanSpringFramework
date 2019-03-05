@@ -4,15 +4,15 @@ import org.dylan.springframework.annotation.Repository;
 
 /**
  * @author Jiacheng Huang
- * @date 2019/03/04 00:09
+ * @date 2019/03/05 12:40
  */
-@Repository
-public class Dao {
+@Repository(name = "anotherDao")
+public class Dao2 {
     public String query() {
-        return "哈哈";
+        return "啦啦";
     }
 
     public boolean delete() {
-        return true;
+        return false;
     }
 }

@@ -6,4 +6,5 @@ package org.dylan.springframework.bean.serviceI;
  */
 public interface ServiceI {
     String query();
+    boolean delete();
 }
